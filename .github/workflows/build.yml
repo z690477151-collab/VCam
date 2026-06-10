@@ -30,7 +30,7 @@ jobs:
 
     - name: Install iOS SDK
       run: |
-        curl -fsSL https://github.com/theos/sdks/releases/download/epilogue/iPhoneOS16.5.sdk.tar.xz -o /tmp/sdk.tar.xz
+        curl -fsSL https://github.com/theos/sdks/releases/download/master-146e41f/iPhoneOS16.5.sdk.tar.xz -o /tmp/sdk.tar.xz
         mkdir -p $HOME/theos/sdks
         tar -xf /tmp/sdk.tar.xz -C $HOME/theos/sdks
         echo "Installed SDKs:"
