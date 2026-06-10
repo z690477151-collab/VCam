@@ -1,5 +1,6 @@
 #import <Preferences/PSListController.h>
 #import <Preferences/PSSpecifier.h>
+#import <notify.h>
 
 @interface VCamRootListController : PSListController
 @end
@@ -14,7 +15,7 @@
 }
 
 - (void)respring {
-    system("killall -9 SpringBoard");
+    notify_post("com.apple.uikit.respring");
 }
 
 - (void)selectVideo {
