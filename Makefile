@@ -15,8 +15,8 @@ VCam_PRIVATE_FRAMEWORKS =
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 
-SUBPROJECTS += vcamsettings
-include $(THEOS_MAKE_PATH)/aggregate.mk
+# SUBPROJECTS += vcamsettings  # Disabled: Preferences.framework not in iOS 16.5 SDK
+# include $(THEOS_MAKE_PATH)/aggregate.mk
 
 after-install::
 	install.exec "killall -9 SpringBoard"
