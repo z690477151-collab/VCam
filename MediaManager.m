@@ -110,7 +110,8 @@
 
 - (CMSampleBufferRef)nextVideoFrame {
     if (self.mode != VCamModeVideo || !self.videoOutput) {
-        return [self generateBlackFrameWithSize:self.videoSize presentationTime:CACurrentMediaTime()];
+        CMTime pts = CMTimeMakeWithSeconds(CACurrentMediaTime(), 1000000);
+        return [self generateBlackFrameWithSize:self.videoSize presentationTime:pts];
     }
     
     CMSampleBufferRef sample = [self.videoOutput copyNextSampleBuffer];
@@ -122,7 +123,8 @@
             sample = [self.videoOutput copyNextSampleBuffer];
         }
         if (!sample) {
-            return [self generateBlackFrameWithSize:self.videoSize presentationTime:CACurrentMediaTime()];
+            CMTime pts = CMTimeMakeWithSeconds(CACurrentMediaTime(), 1000000);
+            return [self generateBlackFrameWithSize:self.videoSize presentationTime:pts];
         }
     }
     
