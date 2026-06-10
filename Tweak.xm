@@ -115,9 +115,6 @@ static UIViewController *findTopViewController(void) {
     [picker dismissViewControllerAnimated:YES completion:nil];
     
     NSURL *url = info[UIImagePickerControllerMediaURL];
-    if (!url) {
-        url = info[UIImagePickerControllerReferenceURL];
-    }
     if (!url) return;
     
     NSURL *tempURL = [NSURL fileURLWithPath:[NSTemporaryDirectory() 
@@ -158,7 +155,7 @@ static void handleTapGesture(UITapGestureRecognizer *gesture) {
         }
         UIImagePickerController *picker = [[UIImagePickerController alloc] init];
         picker.sourceType = UIImagePickerControllerSourceTypeSavedPhotosAlbum;
-        picker.mediaTypes = @[(NSString *)kUTTypeMovie, @"public.movie"];
+        picker.mediaTypes = @[@"public.movie"];
         picker.delegate = g_pickerDelegate;
         [topVC presentViewController:picker animated:YES completion:nil];
     }]];
