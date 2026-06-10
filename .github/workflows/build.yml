@@ -1,0 +1,106 @@
+name: Build VCam
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build iOS Tweak (Theos)
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Setup Theos
+      run: |
+        bash -c "$(curl -fsSL https://raw.githubusercontent.com/theos/theos/master/bin/install-theos)"
+        echo "THEOS=~/theos" >> $GITHUB_ENV
+
+    - name: Install iOS SDK
+      run: |
+        # Download latest iOS SDK from Theos SD repository
+        curl -fsSL https://github.com/theos/sdks/releases/latest/download/iPhoneOS16.5.sdk.tar.xz -o /tmp/sdk.tar.xz
+        mkdir -p ~/theos/sdks
+        tar -xf /tmp/sdk.tar.xz -C ~/theos/sdks
+        ls ~/theos/sdks/
+
+    - name: Build Tweak
+      run: |
+        export THEOS=~/theos
+        make clean
+        make package FINALPACKAGE=1
+      working-directory: .
+
+    - name: Extract dylib from deb
+      run: |
+        mkdir -p output
+        # Find the .deb file
+        DEB=$(find . -name "*.deb" | head -1)
+        echo "Found deb: $DEB"
+        
+        # Extract deb (ar archive)
+        cp "$DEB" output/
+        
+        # Also extract the dylib directly for convenience
+        cd output
+        ar x ../packages/*.deb || ar x ../*.deb
+        tar -xf data.tar* 2>/dev/null || tar -xzf data.tar.gz 2>/dev/null || tar -xJf data.tar.xz 2>/dev/null || true
+        
+        # Find and copy dylib to output root
+        DYLIB=$(find . -name "*.dylib" | head -1)
+        if [ -n "$DYLIB" ]; then
+          cp "$DYLIB" ./VCam.dylib
+          echo "Extracted dylib: $DYLIB"
+        fi
+
+    - name: Upload deb package
+      uses: actions/upload-artifact@v4
+      with:
+        name: VCam-deb
+        path: |
+          output/*.deb
+        retention-days: 30
+
+    - name: Upload dylib
+      uses: actions/upload-artifact@v4
+      with:
+        name: VCam-dylib
+        path: |
+          output/VCam.dylib
+        retention-days: 30
+
+    - name: Upload full build output
+      uses: actions/upload-artifact@v4
+      with:
+        name: VCam-full
+        path: |
+          output/
+        retention-days: 30
+
+  release:
+    name: Create Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: |
+          artifacts/VCam-deb/*.deb
+          artifacts/VCam-dylib/VCam.dylib
+        generate_release_notes: true
